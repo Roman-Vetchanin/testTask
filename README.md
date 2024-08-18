@@ -5,3 +5,5 @@
 * DATABASE_PASSWORD - пароль пользователя к серверу базы данных<br>
 Для взаимодействия с API предусмотрен swagger-UI, доступный на:
  http://localhost:8080/swagger-ui/index.html#
+Или <br>
+java -jar demo-0.0.1-SNAPSHOT.jar --spring.datasource.url=URL_OF_DATABASE --spring.datasource.username=DATABASE_USERNAME --spring.datasource.password=DATABASE_PASSWORD --server.port=NUMBER_PORT
