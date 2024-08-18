@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import com.example.demo.entyti.ProductEntity;
 import com.example.demo.service.ProductService;
-import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +43,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductEntity>> findAllProducts(@RequestParam @Min(1) int page, @RequestParam @Min(1) int size, @RequestParam SortOrder order, @RequestParam SortOrder orderPrice) {
+    public ResponseEntity<List<ProductEntity>> findAllProducts(@RequestParam int page, @RequestParam  int size, @RequestParam SortOrder order, @RequestParam SortOrder orderPrice) {
         return ResponseEntity.ok(productService.findAll(page, size, order, orderPrice));
     }
 
