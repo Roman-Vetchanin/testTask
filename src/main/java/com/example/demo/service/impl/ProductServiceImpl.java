@@ -9,11 +9,13 @@ import com.example.demo.repositories.SizeRepository;
 import com.example.demo.repositories.TypeOfEquipmentRepository;
 import com.example.demo.service.ProductService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -55,47 +57,53 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductEntity> findByName(String name, SortOrder order) {
-        List<ProductEntity> productEntity = productRepository.findByNameIgnoreCase(name);
-        if (productEntity.isEmpty()) {
+    public List<ProductEntity> findByName(String name, SortOrder sort) {
+        List<ProductEntity> findList = productRepository.findByNameIgnoreCase(name);
+        if (findList.isEmpty()) {
             log.warn("The method findByName didn't work");
             throw new ProductNotFoundException("Product name " + name + " not found");
         }
-        if (order.equals(SortOrder.ASCENDING)) {
-            log.info("Sort order {}", order);
-            productEntity.sort(Comparator.comparing(ProductEntity::getManufacturer));
-        } else if (order.equals(SortOrder.DESCENDING)) {
-            log.info("Sort order {}", order);
-            productEntity.sort(Comparator.comparing(ProductEntity::getManufacturer).reversed());
+        if (sort.equals(SortOrder.ASCENDING)) {
+            log.info("Sort order {}", sort);
+            findList.sort(Comparator.comparing(ProductEntity::getName));
+        } else if (sort.equals(SortOrder.DESCENDING)) {
+            log.info("Sort order {}", sort);
+            findList.sort(Comparator.comparing(ProductEntity::getName).reversed());
         }
-        log.info("The findByName method worked");
-        return productEntity;
-    }
-
-    @Override
-    public List<ProductEntity> findBySize(int height, int length, int width) {
-        List<ProductEntity> findList = productRepository.findBySize_HeightBeforeAndSize_LengthBeforeAndSize_WidthBefore(height, length, width);
-        if (findList.isEmpty()) {
-            log.warn("The method findBySize didn't work");
-            throw new ProductNotFoundException("Product with size " + height + "x" + length + "x" + width + " not found");
-        }
-        log.info("The findBySize method worked");
         return findList;
     }
 
     @Override
-    public List<ProductEntity> findByPriceRange(double minPrice, double maxPrice, SortOrder order) {
-        List<ProductEntity> findList = productRepository.findByPriceBetween(minPrice, maxPrice);
+    public List<ProductEntity> findByColor(String color, SortOrder sort) {
+        List<ProductEntity> findList = productRepository.findByColorIgnoreCase(color);
         if (findList.isEmpty()) {
-            log.warn("The method findByPriceRange didn't work");
-            throw new ProductNotFoundException("Product with price between " + minPrice + " and " + maxPrice + " not found");
+            log.warn("The method findByColor didn't work");
+            throw new ProductNotFoundException("Product with color " + color + " not found");
+        }
+        if (sort.equals(SortOrder.ASCENDING)) {
+            log.info("Sort order {}", sort);
+            findList.sort(Comparator.comparing(ProductEntity::getColor));
+        } else if (sort.equals(SortOrder.DESCENDING)) {
+            findList.sort(Comparator.comparing(ProductEntity::getColor));
+        }
+        return findList;
+    }
+
+    @Override
+    public List<ProductEntity> findByTypeOfEquipment(String typeOfEquipment, SortOrder order) {
+        List<ProductEntity> findList = productRepository.findByTypeOfEquipment_NameIgnoreCase(typeOfEquipment);
+        if (findList.isEmpty()) {
+            log.warn("The method findByType didn't work");
+            throw new ProductNotFoundException("Product of type " + typeOfEquipment + " not found");
         }
         if (order.equals(SortOrder.ASCENDING)) {
-           findList.sort(Comparator.comparing(ProductEntity::getPrice));
+            log.info("Sort order {}", order);
+            findList.sort(Comparator.comparing(ProductEntity::getName));
         } else if (order.equals(SortOrder.DESCENDING)) {
-            findList.sort(Comparator.comparing(ProductEntity::getPrice).reversed());
+            log.info("Sort order {}", order);
+            findList.sort(Comparator.comparing(ProductEntity::getName));
         }
-        log.info("The findByPriceRange method worked");
+        log.info("The findByType method worked");
         return findList;
     }
 
@@ -111,8 +119,32 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductEntity> findByCounty(String country) {
-        List<ProductEntity> findList = productRepository.findByCountryOfOriginIgnoreCase(country.toLowerCase());
+    public List<ProductEntity> findAll(int pageSize, int pageCount, SortOrder sortOrder, SortOrder sortOrderPrice) {
+        List<ProductEntity> findAllList = productRepository.findAll(PageRequest.of(pageSize - 1, pageCount)).get().collect(Collectors.toList());
+        if (findAllList.isEmpty()) {
+            log.warn("The method findAll didn't work");
+            throw new ProductNotFoundException("No products found");
+        }
+        if (sortOrder.equals(SortOrder.ASCENDING)) {
+            log.info("Sort order {}", sortOrder);
+            findAllList.sort(Comparator.comparing(ProductEntity::getName));
+        } else if (sortOrder.equals(SortOrder.DESCENDING)) {
+            log.info("Sort order {}", sortOrder);
+            findAllList.sort(Comparator.comparing(ProductEntity::getName).reversed());
+        }
+        if (sortOrderPrice.equals(SortOrder.ASCENDING)) {
+            log.info("Sort order {}", sortOrderPrice);
+            findAllList.sort(Comparator.comparing(ProductEntity::getPrice));
+        } else if (sortOrderPrice.equals(SortOrder.DESCENDING)) {
+            log.info("Sort order {}", sortOrderPrice);
+            findAllList.sort(Comparator.comparing(ProductEntity::getPrice).reversed());
+        }
+        return findAllList;
+    }
+
+    @Override
+    public List<ProductEntity> findByCountry(String country, String name) {
+        List<ProductEntity> findList = productRepository.findByCountryOfOriginIgnoreCaseAndTypeOfEquipment_NameIgnoreCase(country, name);
         if (findList.isEmpty()) {
             log.warn("The method findByCounty didn't work");
             throw new ProductNotFoundException("Product from " + country + " not found");
@@ -123,7 +155,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductEntity> findByManufacturer(String manufacturer) {
-        List<ProductEntity> findList = productRepository.findByManufacturerIgnoreCase(manufacturer.toLowerCase());
+        List<ProductEntity> findList = productRepository.findByManufacturerIgnoreCase(manufacturer);
         if (findList.isEmpty()) {
             log.warn("The method findByManufacturer didn't work");
             throw new ProductNotFoundException("Product from " + manufacturer + " not found");
@@ -154,26 +186,4 @@ public class ProductServiceImpl implements ProductService {
         return findList;
     }
 
-    @Override
-    public List<ProductEntity> findByType(String type) {
-        List<ProductEntity> findList = productRepository.findByTypeOfEquipment_NameIgnoreCase(type.toLowerCase());
-        if (findList.isEmpty()) {
-            log.warn("The method findByType didn't work");
-            throw new ProductNotFoundException("Product of type " + type + " not found");
-        }
-        log.info("The findByType method worked");
-        return findList;
-    }
-
-    @Override
-    public List<ProductEntity> findByColor(String color) {
-        List<ProductEntity> findList = productRepository.findByColorIgnoreCase(color.toLowerCase());
-        if (findList.isEmpty()) {
-            log.warn("The method findByColor didn't work");
-            throw new ProductNotFoundException("Product with color " + color + " not found");
-        }
-
-        log.info("The findByColor method worked");
-        return findList;
-    }
 }

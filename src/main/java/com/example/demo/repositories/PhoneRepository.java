@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PhoneRepository extends JpaRepository<PhoneEntity, Long> {
 
-    List<PhoneEntity> findByMemoryCapacity(int memoryCapacity);
+    List<PhoneEntity> findByMemoryCapacityBefore(int memoryCapacity);
 
     List<PhoneEntity> findByNumberOfCameras(int numberOfCameras);
 }

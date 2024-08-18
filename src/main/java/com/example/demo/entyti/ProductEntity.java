@@ -25,7 +25,8 @@ public class ProductEntity {
     private Boolean installmentPlan;
     private Long serialNumber;
     private String color;
-    private double price;
+    private Double price;
+    private Boolean productAvailability;
     @ManyToOne
     @JoinColumn(name = "size_id")
     private Size size;
